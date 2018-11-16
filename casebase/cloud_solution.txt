@@ -1,0 +1,6 @@
+# columns: id, price, region, CPUPower, CPUCores, memory, storage, bandwidth, IOPerformance, AvgResponseTime, MaxLatency, MaxUsers, availability, tiers
+
+case 1,10,US-west,2.5,1,512,200,5,74,25,75,50,100,3,aws-t1
+case 2,20,US-east,3.0,2,1024,300,6,100,25,75,74,100,3,aws-t2
+case 3,30,US-west,3.0,4,1024,400,7,110,25,75,100,100,3,aws-t3
+case 4,40,US-east,3.2,4,2048,500,8,120,25,75,150,100,3,aws-t4

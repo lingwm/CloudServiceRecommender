@@ -1,0 +1,24 @@
+<TextFileConfiguration>
+	<FilePath>casebase/cloud_solution.txt</FilePath>
+	<Delimiters>,</Delimiters>
+	<DescriptionClassName>Module.CloudDescription</DescriptionClassName>
+	<DescriptionMappings>
+		<Map>price</Map>
+		<Map>region</Map>
+		<Map>CPUPower</Map>
+		<Map>CPUCores</Map>
+		<Map>memory</Map>
+        <Map>storage</Map>
+        <Map>bandwidth</Map>
+        <Map>IOPerformance</Map>
+        <Map>AvgResponseTime</Map>
+        <Map>MaxLatency</Map>
+        <Map>MaxUsers</Map>
+        <Map>availability</Map>
+        <Map>tiers</Map>
+	</DescriptionMappings>
+	<SolutionClassName>Module.CloudSolution</SolutionClassName>
+	<SolutionMappings>
+		<Map>name</Map>
+	</SolutionMappings>
+</TextFileConfiguration>
