@@ -1,26 +1,27 @@
 package gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.*;
-
 import Module.CloudDescription;
-import jcolibri.cbrcore.CBRQuery;
+import Module.CloudSolution;
+import jcolibri.cbrcore.CBRCase;
 import recommender.CloudRecommender;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
- * Query dialgo
+ * Revision Dialog
  * @author Lingwei M
  * @version 1.0
  */
-public class QueryDialog extends JDialog {
+public class RevisionDialog extends JDialog {
 
     private static final long serialVersionUID = 1L;
 
+    JLabel caseId;
     JTextField price;
     JTextField region;
     JTextField CPUPower;
@@ -34,10 +35,14 @@ public class QueryDialog extends JDialog {
     JTextField MaxUsers;
     JTextField availability;
     JTextField tiers;
+    JTextField name;
 
-    public QueryDialog(JFrame parent)
+    ArrayList<CBRCase> cases;
+    int currentCase;
+
+    public RevisionDialog(JFrame main)
     {
-        super(parent,true);
+        super(main, true);
         configureFrame();
     }
 
@@ -50,8 +55,7 @@ public class QueryDialog extends JDialog {
         {
         }
 
-        this.setTitle("Configure Query");
-
+        this.setTitle("Revise Cases");
         this.getContentPane().setLayout(new BorderLayout());
 
         /**********************************************************/
@@ -60,10 +64,10 @@ public class QueryDialog extends JDialog {
         panel.setLayout(new SpringLayout());
 
         JLabel label;
-        panel.add(label = new JLabel("Attribute"));
+
+        panel.add(label = new JLabel("Description"));
         label.setFont(label.getFont().deriveFont(Font.BOLD));
-        panel.add(label = new JLabel("Value"));
-        label.setFont(label.getFont().deriveFont(Font.BOLD));
+        panel.add(label = new JLabel());
 
         panel.add(new JLabel("Price"));
         panel.add(price = new JTextField());
@@ -104,25 +108,65 @@ public class QueryDialog extends JDialog {
         panel.add(new JLabel("Tiers"));
         panel.add(tiers = new JTextField());
 
+
+        panel.add(label = new JLabel("Solution"));
+        label.setFont(label.getFont().deriveFont(Font.BOLD));
+        panel.add(label = new JLabel());
+
+        panel.add(new JLabel("Name"));
+        panel.add(name = new JTextField());
+
 //		Lay out the panel.
         Utils.makeCompactGrid(panel,
-                14, 2, //rows, cols
+                16, 2, //rows, cols
                 6, 6,        //initX, initY
-                10, 10);       //xPad, yPad
+                30, 10);       //xPad, yPad
+
+        JPanel casesPanel = new JPanel();
+        casesPanel.setLayout(new BorderLayout());
+        casesPanel.add(panel, BorderLayout.CENTER);
+
+        JPanel casesIterPanel = new JPanel();
+        casesIterPanel.setLayout(new FlowLayout());
+        JButton prev = new JButton("<<");
+        casesIterPanel.add(prev);
+        casesIterPanel.add(caseId = new JLabel("Case id"));
+        JButton follow = new JButton(">>");
+        casesIterPanel.add(follow);
+
+        prev.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                saveCase();
+                currentCase = (currentCase+cases.size()-1) % cases.size();
+                showCase();
+            }
+        });
+
+        follow.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                saveCase();
+                currentCase = (currentCase+1) % cases.size();
+                showCase();
+            }
+        });
+
+        casesPanel.add(casesIterPanel, BorderLayout.NORTH);
+
 
         JPanel panelAux = new JPanel();
         panelAux.setLayout(new BorderLayout());
         panelAux.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        panelAux.add(panel,BorderLayout.NORTH);
+        panelAux.add(casesPanel,BorderLayout.NORTH);
 
         JPanel buttons = new JPanel();
         buttons.setLayout(new BorderLayout());
 
-        JButton ok = new JButton("Set Query >>");
+        JButton ok = new JButton("Set Revisions >>");
         ok.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                setQuery();
+                saveCase();
+                next();
             }
         });
         buttons.add(ok,BorderLayout.CENTER);
@@ -155,14 +199,50 @@ public class QueryDialog extends JDialog {
                 getHeight());
     }
 
-    void setQuery()
+    void next()
     {
         this.setVisible(false);
     }
 
-    public CBRQuery getQuery()
+
+    public void showCases(Collection<CBRCase> cases)
     {
-        CloudDescription desc = new CloudDescription();
+        this.cases = new ArrayList<CBRCase>(cases);
+        currentCase = 0;
+        showCase();
+    }
+
+    void showCase()
+    {
+        CBRCase _case = cases.get(currentCase);
+        this.caseId.setText(_case.getID().toString()+" ("+(currentCase+1)+"/"+cases.size()+")");
+
+        CloudDescription desc = (CloudDescription) _case.getDescription();
+
+        this.price.setText(desc.getPrice().toString());
+        this.region.setText(desc.getRegion());
+        this.CPUPower.setText(desc.getCPUPower().toString());
+        this.CPUCores.setText(desc.getCPUCores().toString());
+        this.memory.setText(desc.getMemory().toString());
+        this.storage.setText(desc.getStorage().toString());
+        this.bandwidth.setText(desc.getBandwidth().toString());
+        this.IOPerformance.setText(desc.getIOPerformance().toString());
+        this.AvgResponseTime.setText(desc.getAvgResponseTime().toString());
+        this.MaxLatency.setText(desc.getMaxLatency().toString());
+        this.MaxUsers.setText(desc.getMaxUsers().toString());
+        this.availability.setText(desc.getAvailability().toString());
+        this.tiers.setText(desc.getTiers().toString());
+
+        CloudSolution sol = (CloudSolution) _case.getSolution();
+        this.name.setText(sol.getName());
+    }
+
+    void saveCase()
+    {
+        CBRCase _case = cases.get(currentCase);
+        this.caseId.setText(_case.getID().toString()+" ("+(currentCase+1)+"/"+cases.size()+")");
+
+        CloudDescription desc = (CloudDescription) _case.getDescription();
         desc.setPrice(Integer.valueOf(price.getText()));
         desc.setRegion(region.getText());
         desc.setCPUPower(Double.valueOf(CPUPower.getText()));
@@ -177,17 +257,16 @@ public class QueryDialog extends JDialog {
         desc.setAvailability(Integer.valueOf(availability.getText()));
         desc.setTiers(Integer.valueOf(tiers.getText()));
 
-        CBRQuery query = new CBRQuery();
-        query.setDescription(desc);
+        CloudSolution sol = (CloudSolution) _case.getSolution();
+        sol.setName(this.name.getText());
 
-        return query;
     }
 
     /**
      * @param args
      */
     public static void main(String[] args) {
-        QueryDialog qf = new QueryDialog(null);
+        RevisionDialog qf = new RevisionDialog(null);
         qf.setVisible(true);
         System.out.println("Bye");
     }

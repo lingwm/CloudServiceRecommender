@@ -7,11 +7,12 @@ import jcolibri.cbrcore.CBRCase;
 import jcolibri.cbrcore.CBRCaseBase;
 import jcolibri.cbrcore.CBRQuery;
 import jcolibri.cbrcore.Connector;
-import jcolibri.connector.PlainTextConnector;
+import Module.PlainTextConnector;
 import jcolibri.exception.ExecutionException;
 import jcolibri.method.retrieve.KNNretrieval.KNNConfig;
 import jcolibri.method.retrieve.KNNretrieval.KNNretrievalMethod;
 import jcolibri.method.retrieve.KNNretrieval.similarity.global.Average;
+import jcolibri.method.retrieve.RemoveRetrievalEvaluation;
 import jcolibri.method.retrieve.RetrievalResult;
 
 import javax.swing.*;
@@ -41,6 +42,10 @@ public class CloudRecommender implements StandardCBRApplication {
 
     SimilarityDialog similarityDialog;
     ResultDialog resultDialog;
+    //AutoAdaptationDialog autoAdaptDialog;
+    RevisionDialog revisionDialog;
+    RetainDialog retainDialog;
+
 
     @Override
     public void configure() throws ExecutionException {
@@ -52,6 +57,9 @@ public class CloudRecommender implements StandardCBRApplication {
             // Create the dialogs
             similarityDialog = new SimilarityDialog(main);
             resultDialog = new ResultDialog(main);
+            //autoAdaptDialog  = new AutoAdaptationDialog(main);
+            revisionDialog = new RevisionDialog(main);
+            retainDialog     = new RetainDialog(main);
 
         } catch (Exception e){
             throw new ExecutionException(e);
@@ -78,12 +86,26 @@ public class CloudRecommender implements StandardCBRApplication {
         // Show result
         resultDialog.showCases(eval);
         resultDialog.setVisible(true);
+        // Remove retrieval evaluation
+        Collection<CBRCase> selectedcases = RemoveRetrievalEvaluation.removeRetrievalEvaluation(eval);
+
+        // Show adaptation dialog
+        //autoAdaptDialog.setVisible(true);
+
+        // Revise
+        revisionDialog.showCases(selectedcases);
+        revisionDialog.setVisible(true);
+        // Retain
+        retainDialog.showCases(selectedcases, _caseBase.getCases().size());
+        retainDialog.setVisible(true);
+        Collection<CBRCase> casesToRetain = retainDialog.getCasestoRetain();
+        _caseBase.learnCases(casesToRetain);
 
     }
 
     @Override
     public void postCycle() throws ExecutionException {
-
+        _connector.close();
     }
 
     static JFrame main;
